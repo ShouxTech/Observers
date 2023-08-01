@@ -29,9 +29,7 @@ local function ObservePlayers(callback: (player: Player) -> (() -> ())?): () -> 
 		playerObservers[player] = ObservePlayer(player, function()
 			local cleanup = callback(player);
 
-			return function()
-				cleanup();
-			end;
+			return cleanup;
 		end);
 	end;
 

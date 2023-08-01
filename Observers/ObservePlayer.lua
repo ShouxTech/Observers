@@ -50,7 +50,7 @@ local function ObservePlayer(player: Player, callback: () -> (() -> ())?): () ->
 		if not playerRemovingConn.Connected then return; end;
 
         task.spawn(onPlayerAdded, player);
-	end)
+	end);
 
 	-- Cleanup:
 	return function()
