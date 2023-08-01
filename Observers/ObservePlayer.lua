@@ -1,6 +1,6 @@
 --!strict
 
-local Players = game:GetService("Players")
+local Players = game:GetService('Players');
 
 --[=[
 	Creates an observer that captures each player in the game.
@@ -26,7 +26,8 @@ local function ObservePlayer(player: Player, callback: () -> (() -> ())?): () ->
 
 		task.spawn(function()
 			cleanup = callback();
-			if typeof(cleanup) == "function" then
+
+			if typeof(cleanup) == 'function' then
 				if (not playerRemovingConn.Connected) or (not player.Parent) then
 					task.spawn(cleanup);
 				end;
@@ -53,10 +54,10 @@ local function ObservePlayer(player: Player, callback: () -> (() -> ())?): () ->
 
 	-- Cleanup:
 	return function()
-		playerRemovingConn:Disconnect()
+		playerRemovingConn:Disconnect();
 
         onPlayerRemoving(player);
-	end
-end
+	end;
+end;
 
 return ObservePlayer

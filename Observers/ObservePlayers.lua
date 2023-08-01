@@ -2,6 +2,8 @@
 
 local Players = game:GetService("Players")
 
+local ObservePlayer = require(script.Parent.ObservePlayer);
+
 --[=[
 	Creates an observer that captures each player in the game.
 
@@ -17,62 +19,41 @@ local Players = game:GetService("Players")
 	```
 ]=]
 local function ObservePlayers(callback: (player: Player) -> (() -> ())?): () -> ()
-	local playerAddedConn: RBXScriptConnection
-	local playerRemovingConn: RBXScriptConnection
+	local playerAddedConn: RBXScriptConnection;
 
-	local cleanupsPerPlayer: { [Player]: () -> () } = {}
+	local playerObservers: {[Player]: () -> ()} = {};
 
-	local function OnPlayerAdded(player: Player)
-		if not playerAddedConn.Connected then
-			return
-		end
+	local function playerAdded(player: Player)
+		if not playerAddedConn.Connected then return; end;
 
-		task.spawn(function()
-			local cleanup = callback(player)
-			if typeof(cleanup) == "function" then
-				if playerAddedConn.Connected and player.Parent then
-					cleanupsPerPlayer[player] = cleanup
-				else
-					task.spawn(cleanup)
-				end
-			end
-		end)
-	end
+		playerObservers[player] = ObservePlayer(player, function()
+			local cleanup = callback(player);
 
-	local function OnPlayerRemoving(player: Player)
-		local cleanup = cleanupsPerPlayer[player]
-		cleanupsPerPlayer[player] = nil
-		if typeof(cleanup) == "function" then
-			task.spawn(cleanup)
-		end
-	end
+			return function()
+				cleanup();
+			end;
+		end);
+	end;
 
-	-- Listen for changes:
-	playerAddedConn = Players.PlayerAdded:Connect(OnPlayerAdded)
-	playerRemovingConn = Players.PlayerRemoving:Connect(OnPlayerRemoving)
+	playerAddedConn = Players.PlayerAdded:Connect(playerAdded);
 
 	-- Initial:
 	task.defer(function()
-		if not playerAddedConn.Connected then
-			return
-		end
+		if not playerAddedConn.Connected then return; end;
 
 		for _, player in Players:GetPlayers() do
-			task.spawn(OnPlayerAdded, player)
-		end
-	end)
+			task.spawn(playerAdded, player);
+		end;
+	end);
 
 	-- Cleanup:
 	return function()
-		playerAddedConn:Disconnect()
-		playerRemovingConn:Disconnect()
+		playerAddedConn:Disconnect();
 
-		local player = next(cleanupsPerPlayer)
-		while player do
-			OnPlayerRemoving(player)
-			player = next(cleanupsPerPlayer)
-		end
-	end
-end
+		for _, stopObserver in playerObservers do
+			stopObserver();
+		end;
+	end;
+end;
 
 return ObservePlayers
