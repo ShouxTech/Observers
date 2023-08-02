@@ -6,7 +6,7 @@ Forked from [RbxObservers](https://github.com/Sleitnick/RbxObservers)
 
 ## Install
 Install with [wally](https://wally.run/):\
-`Observers = "shouxtech/observers@0.1.2"`
+`Observers = "shouxtech/observers@0.1.3"`
 
 ## Usage
 Usage is mostly identical to [RbxObservers](https://github.com/Sleitnick/RbxObservers). However, here are the differences:
